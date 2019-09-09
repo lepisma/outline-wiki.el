@@ -4,7 +4,7 @@
 
 ;; Author: Abhinav Tushar <lepisma@fastmail.com>
 ;; Version: 0.0.3
-;; Package-Requires: ((emacs "26"))
+;; Package-Requires: ((emacs "26") (helm "3.3") (request "0.3.1"))
 ;; URL: https://github.com/lepisma/outline-wiki.el
 
 ;;; Commentary:
@@ -29,6 +29,7 @@
 
 ;;; Code:
 
+(require 'cl-lib)
 (require 'helm)
 (require 'org)
 (require 'request)
@@ -45,7 +46,7 @@
   (browse-url (concat outline-wiki-url "/settings/tokens")))
 
 (defun outline-wiki-doc-open (doc)
-  "Open an outline doc in a new buffer."
+  "Open an outline DOC in a new buffer."
   (let ((buffer (get-buffer-create (concat "*outline-wiki:" (alist-get 'title doc) "*"))))
     (with-current-buffer buffer
       (erase-buffer)
@@ -59,8 +60,19 @@
     (set-buffer buffer)))
 
 (defun outline-wiki-doc-open-in-browser (doc)
-  "Open an outline doc in default web browser."
+  "Open an outline DOC in default web browser."
   (browse-url (concat outline-wiki-url (alist-get 'url doc))))
+
+(defun outline-wiki-doc-parent (doc &optional all-docs)
+  "Pick and return parent of given DOC from ALL-DOCS."
+  (when-let ((pid (alist-get 'parentDocumentId doc)))
+    (cl-find-if (lambda (other) (string= (alist-get 'id other) pid)) all-docs)))
+
+(defun outline-wiki-relative-path (doc &optional all-docs)
+  "Return relative `/' joined path for given doc."
+  (if-let ((parent (outline-wiki-doc-parent doc all-docs)))
+      (concat (outline-wiki-relative-path parent all-docs) " / " (alist-get 'title doc))
+    (alist-get 'title doc)))
 
 ;;;###autoload
 (defun helm-outline-wiki-doc ()
@@ -75,7 +87,7 @@
              (lambda (&key data &allow-other-keys)
                (let ((documents (alist-get 'data data)))
                  (helm :sources (helm-build-sync-source "documents"
-                                  :candidates (mapcar (lambda (doc) (cons (alist-get 'title doc) doc)) documents)
+                                  :candidates (mapcar (lambda (doc) (cons (outline-wiki-relative-path doc documents) doc)) documents)
                                   :action `(("Open in buffer" . ,#'outline-wiki-doc-open)
                                             ("Open in browser" . ,#'outline-wiki-doc-open-in-browser)))
                        :buffer "*helm outline*"
