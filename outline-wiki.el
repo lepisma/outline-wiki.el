@@ -54,14 +54,33 @@
     (with-current-buffer buffer
       (erase-buffer)
       (insert (alist-get 'text doc))
-      (shell-command-on-region (point-min) (point-max) (format "pandoc -f markdown -t org") buffer t)
+      (shell-command-on-region (point-min) (point-max) "pandoc -f markdown -t org" buffer t)
       (org-mode)
       (outline-show-all)
       (deactivate-mark)
       (goto-char (point-min))
-      (read-only-mode)
       (setq outline-wiki-buffer-doc doc))
     (set-buffer buffer)))
+
+(defun outline-wiki-doc-to-md ()
+  "Convert a doc buffer to markdown."
+  (let ((conv-buffer (get-buffer-create "*outline-wiki-conv*")))
+    (shell-command-on-region (point-min) (point-max) "pandoc -f org -t gfm" conv-buffer)
+    (with-current-buffer conv-buffer
+      (prog1 (buffer-string)
+        (kill-buffer conv-buffer)))))
+
+(defun outline-wiki-doc-update ()
+  "Update doc shown in current buffer."
+  (request
+   (concat outline-wiki-url "/api/documents.update")
+   :type "POST"
+   :headers `(("authorization" . ,(concat "Bearer " outline-wiki-api-token)))
+   :data `(("id" . ,(alist-get 'id outline-wiki-buffer-doc))
+           ("text" . ,(outline-wiki-doc-to-md)))
+   :success (cl-function
+             (lambda (&allow-other-keys)
+               (message "Changes saved.")))))
 
 (defun outline-wiki-doc-open-in-browser (doc)
   "Open an outline DOC in default web browser."
