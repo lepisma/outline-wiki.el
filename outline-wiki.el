@@ -62,6 +62,7 @@
   "Open an outline doc in default web browser."
   (browse-url (concat outline-wiki-url (alist-get 'url doc))))
 
+;;;###autoload
 (defun helm-outline-wiki-doc ()
   "Actions for outline wiki documents."
   (interactive)
