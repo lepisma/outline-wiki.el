@@ -39,6 +39,11 @@
 (defcustom outline-wiki-api-token nil
   "API token for outline wiki.")
 
+(defun outline-wiki-get-token ()
+  "Open webpage for token generation."
+  (interactive)
+  (browse-url (concat outline-wiki-url "/settings/tokens")))
+
 (defun outline-wiki-doc-open (doc)
   "Open an outline doc in a new buffer."
   (let ((buffer (get-buffer-create (concat "*outline-wiki:" (alist-get 'title doc) "*"))))

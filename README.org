@@ -2,8 +2,13 @@
 
 Emacs tooling for [[https://github.com/outline/outline][outline]] wiki.
 
-/Roadmap/
-- [X] Support read only access to documents.
-- [ ] Switch to Org while in Emacs.
-- [ ] Mirror the complete tree locally.
-- [ ] Edit support in Emacs.
+** Usage
+Set ~outline-wiki-url~ to your instance url (e.g. https://www.getoutline.com) and
+~outline-wiki-api-token~ to your API token (~outline-wiki-get-token~ will take you
+to the token generation page).
+
+** Roadmap
++ [X] Support read only access to documents.
++ [X] Switch to Org while in Emacs.
++ [ ] Edit support.
++ [ ] Mirroring the complete tree locally.
