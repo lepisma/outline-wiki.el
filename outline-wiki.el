@@ -79,7 +79,7 @@
                                   :action `(("Open in buffer" . ,#'outline-wiki-doc-open)
                                             ("Open in browser" . ,#'outline-wiki-doc-open-in-browser)))
                        :buffer "*helm outline*"
-                       :prompt "Open Doc : "))))))
+                       :prompt "Open Doc: "))))))
 
 (provide 'outline-wiki)
 
