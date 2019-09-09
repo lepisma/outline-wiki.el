@@ -12,5 +12,5 @@ Then use ~helm-outline-wiki-doc~ to operate on documents.
 ** Roadmap
 + [X] Support read only access to documents.
 + [X] Switch to Org while in Emacs.
-+ [ ] Edit support.
++ [-] Edit support.
 + [ ] Mirroring the complete tree locally.
