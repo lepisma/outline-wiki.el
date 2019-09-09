@@ -45,8 +45,8 @@
     (with-current-buffer buffer
       (erase-buffer)
       (insert (alist-get 'text doc))
-      ;; TODO: Markdown rendering needs some polishing here.
-      (markdown-mode)
+      (shell-command-on-region (point-min) (point-max) (format "pandoc -f markdown -t org") buffer t)
+      (org-mode)
       (read-only-mode))
     (set-buffer buffer)))
 
