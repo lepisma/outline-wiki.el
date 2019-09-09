@@ -50,6 +50,10 @@
       (read-only-mode))
     (set-buffer buffer)))
 
+(defun outline-wiki-doc-open-in-browser (doc)
+  "Open an outline doc in default web browser."
+  (browse-url (concat outline-wiki-url (alist-get 'url doc))))
+
 (defun helm-outline-wiki-doc ()
   "Actions for outline wiki documents."
   (interactive)
@@ -63,7 +67,8 @@
                (let ((documents (alist-get 'data data)))
                  (helm :sources (helm-build-sync-source "documents"
                                   :candidates (mapcar (lambda (doc) (cons (alist-get 'title doc) doc)) documents)
-                                  :action `(("Open in Org buffer" . ,#'outline-wiki-doc-open)))
+                                  :action `(("Open in buffer" . ,#'outline-wiki-doc-open)
+                                            ("Open in browser" . ,#'outline-wiki-doc-open-in-browser)))
                        :buffer "*helm outline*"
                        :prompt "Open Doc : "))))))
 
