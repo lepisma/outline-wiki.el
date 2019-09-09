@@ -7,6 +7,8 @@ Set ~outline-wiki-url~ to your instance url (e.g. https://www.getoutline.com) an
 ~outline-wiki-api-token~ to your API token (~outline-wiki-get-token~ will take you
 to the token generation page).
 
+Then use ~helm-outline-wiki-doc~ to operate on documents.
+
 ** Roadmap
 + [X] Support read only access to documents.
 + [X] Switch to Org while in Emacs.
