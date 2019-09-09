@@ -40,6 +40,9 @@
 (defcustom outline-wiki-api-token nil
   "API token for outline wiki.")
 
+(defvar-local outline-wiki-buffer-doc nil
+  "Buffer local variable for keeping currently shown document.")
+
 (defun outline-wiki-get-token ()
   "Open webpage for token generation."
   (interactive)
@@ -56,7 +59,8 @@
       (outline-show-all)
       (deactivate-mark)
       (goto-char (point-min))
-      (read-only-mode))
+      (read-only-mode)
+      (setq outline-wiki-buffer-doc doc))
     (set-buffer buffer)))
 
 (defun outline-wiki-doc-open-in-browser (doc)
