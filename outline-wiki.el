@@ -47,6 +47,9 @@
       (insert (alist-get 'text doc))
       (shell-command-on-region (point-min) (point-max) (format "pandoc -f markdown -t org") buffer t)
       (org-mode)
+      (outline-show-all)
+      (deactivate-mark)
+      (goto-char (point-min))
       (read-only-mode))
     (set-buffer buffer)))
 
