@@ -3,7 +3,7 @@
 ;; Copyright (c) 2019 Abhinav Tushar
 
 ;; Author: Abhinav Tushar <lepisma@fastmail.com>
-;; Version: 0.0.4
+;; Version: 0.0.5
 ;; Package-Requires: ((emacs "26") (helm "3.3") (request "0.3.1"))
 ;; URL: https://github.com/lepisma/outline-wiki.el
 
