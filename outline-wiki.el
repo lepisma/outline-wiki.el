@@ -98,17 +98,18 @@
     (alist-get 'title doc)))
 
 ;;;###autoload
-(defun helm-outline-wiki-doc ()
+(defun helm-outline-wiki-doc (query-term)
   "Actions for outline wiki documents."
-  (interactive)
+  (interactive "sQuery: ")
   (request
-   (concat outline-wiki-url "/api/documents.list")
+   (concat outline-wiki-url "/api/documents.search")
    :type "POST"
+   :data `(("query" . ,query-term))
    :headers `(("authorization" . ,(concat "Bearer " outline-wiki-api-token)))
    :parser 'json-read
    :success (cl-function
              (lambda (&key data &allow-other-keys)
-               (let ((documents (alist-get 'data data)))
+               (let ((documents (mapcar (lambda (item) (alist-get 'document item)) (alist-get 'data data))))
                  (helm :sources (helm-build-sync-source "documents"
                                   :candidates (mapcar (lambda (doc) (cons (outline-wiki-relative-path doc documents) doc)) documents)
                                   :action `(("Open in buffer" . ,#'outline-wiki-doc-open)
