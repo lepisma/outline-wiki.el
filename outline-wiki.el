@@ -40,13 +40,46 @@
 (defcustom outline-wiki-api-token nil
   "API token for outline wiki.")
 
-(defvar-local outline-wiki-buffer-doc nil
+(defvar-local outline-wiki-doc nil
   "Buffer local variable for keeping currently shown document.")
 
 (defun outline-wiki-get-token ()
   "Open webpage for token generation."
   (interactive)
   (browse-url (concat outline-wiki-url "/settings/tokens")))
+
+(define-minor-mode outline-wiki-mode
+  "Minor mode for working with outline wiki documents."
+  :init-value nil)
+
+(defun outline-wiki-post-request (request-url data callback)
+  "Send post request to outline API."
+  (request
+   (concat outline-wiki-url request-url)
+   :type "POST"
+   :headers `(("authorization" . ,(concat "Bearer " outline-wiki-api-token)))
+   :data data
+   :parser 'json-read
+   :success (cl-function
+             (lambda (&key data &allow-other-keys)
+               (funcall callback data)))))
+
+(defun outline-wiki-is-share-url (url)
+  (string-match-p (concat outline-wiki-url "/share") url))
+
+(defun outline-wiki-get-share-id-from-share-url (share-url)
+  "Get share id from SHARE-URL."
+  (car (last (split-string share-url "/"))))
+
+(defun outline-wiki-get-id-from-url (url)
+  "Get short doc id from URL."
+  (car (last (split-string url "-"))))
+
+(defun outline-wiki-get-doc-from-url (url callback)
+  (let ((data (if (outline-wiki-is-share-url url)
+                  `(("shareId" . ,(outline-wiki-get-share-id-from-share-url url)))
+                `(("id" . ,(outline-wiki-get-id-from-url url))))))
+    (outline-wiki-post-request "/api/documents.info" data callback)))
 
 (defun outline-wiki-doc-open (doc)
   "Open an outline DOC in a new buffer."
@@ -56,20 +89,22 @@
       (insert (alist-get 'text doc))
       (goto-char (point-min))
       (markdown-mode)
-      (setq outline-wiki-buffer-doc doc))
+      (setq outline-wiki-doc doc)
+      (outline-wiki-mode))
     (set-buffer buffer)))
 
-(defun outline-wiki-doc-update ()
-  "Update doc shown in current buffer."
+(defun outline-wiki-doc-save (doc)
+  "Push given DOC on the API. This unconditionally overwrites the
+upstream so be careful with multiple editors."
   (request
    (concat outline-wiki-url "/api/documents.update")
    :type "POST"
    :headers `(("authorization" . ,(concat "Bearer " outline-wiki-api-token)))
-   :data `(("id" . ,(alist-get 'id outline-wiki-buffer-doc))
+   :data `(("id" . ,(alist-get 'id doc))
            ("text" . ,(buffer-substring-no-properties (point-min) (point-max))))
    :success (cl-function
-             (lambda (&allow-other-keys)
-               (message "Changes saved.")))))
+             (lambda (&rest _)
+               (message "Document saved.")))))
 
 (defun outline-wiki-doc-open-in-browser (doc)
   "Open an outline DOC in default web browser."
@@ -80,31 +115,30 @@
   (when-let ((pid (alist-get 'parentDocumentId doc)))
     (cl-find-if (lambda (other) (string= (alist-get 'id other) pid)) all-docs)))
 
-(defun outline-wiki-relative-path (doc &optional all-docs)
-  "Return relative `/' joined path for given doc."
+(defun outline-wiki-qualified-title (doc &optional all-docs)
+  "Return fully specified title for given doc.
+
+TODO: Show collection name also in front. That might need caching
+      of some sort so not doing right now."
   (if-let ((parent (outline-wiki-doc-parent doc all-docs)))
-      (concat (outline-wiki-relative-path parent all-docs) " / " (alist-get 'title doc))
+      (concat (outline-wiki-relative-path parent all-docs) " › " (alist-get 'title doc))
     (alist-get 'title doc)))
 
 ;;;###autoload
 (defun helm-outline-wiki-search (query-term)
   "Actions for outline wiki documents."
   (interactive "sQuery: ")
-  (request
-   (concat outline-wiki-url "/api/documents.search")
-   :type "POST"
-   :data `(("query" . ,query-term))
-   :headers `(("authorization" . ,(concat "Bearer " outline-wiki-api-token)))
-   :parser 'json-read
-   :success (cl-function
-             (lambda (&key data &allow-other-keys)
-               (let ((documents (mapcar (lambda (item) (alist-get 'document item)) (alist-get 'data data))))
-                 (helm :sources (helm-build-sync-source "documents"
-                                  :candidates (mapcar (lambda (doc) (cons (outline-wiki-relative-path doc documents) doc)) documents)
-                                  :action `(("Open in buffer" . ,#'outline-wiki-doc-open)
-                                            ("Open in browser" . ,#'outline-wiki-doc-open-in-browser)))
-                       :buffer "*helm outline*"
-                       :prompt "Open Doc: "))))))
+  (outline-wiki-post-request
+   "/api/documents.search"
+   `(("query" . ,query-term))
+   (lambda (data)
+     (let ((documents (mapcar (lambda (item) (alist-get 'document item)) (alist-get 'data data))))
+       (helm :sources (helm-build-sync-source "documents"
+                        :candidates (mapcar (lambda (doc) (cons (outline-wiki-qualified-title doc documents) doc)) documents)
+                        :action `(("Open in buffer" . ,#'outline-wiki-doc-open)
+                                  ("Open in browser" . ,#'outline-wiki-doc-open-in-browser)))
+             :buffer "*helm outline*"
+             :prompt "Open Doc: ")))))
 
 (provide 'outline-wiki)
 
