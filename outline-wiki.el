@@ -31,7 +31,7 @@
 
 (require 'cl-lib)
 (require 'helm)
-(require 'org)
+(require 'markdown-mode)
 (require 'request)
 
 (defcustom outline-wiki-url "https://www.getoutline.com"
@@ -55,6 +55,7 @@
       (erase-buffer)
       (insert (alist-get 'text doc))
       (goto-char (point-min))
+      (markdown-mode)
       (setq outline-wiki-buffer-doc doc))
     (set-buffer buffer)))
 
