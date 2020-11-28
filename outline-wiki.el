@@ -67,19 +67,19 @@
 (defun outline-wiki-is-share-url (url)
   (string-match-p (concat outline-wiki-url "/share") url))
 
-(defun outline-wiki-get-share-id-from-share-url (share-url)
-  "Get share id from SHARE-URL."
-  (car (last (split-string share-url "/"))))
-
 (defun outline-wiki-get-id-from-url (url)
-  "Get short doc id from URL."
-  (car (last (split-string url "-"))))
+  "Get identifier from given URL.
+
+This id is share-id or url-id depending on the type of URL."
+  (car (last (split-string url "/"))))
 
 (defun outline-wiki-get-doc-from-url (url callback)
+  "Get document for the given URL and call CALLBACK on the
+document."
   (let ((data (if (outline-wiki-is-share-url url)
-                  `(("shareId" . ,(outline-wiki-get-share-id-from-share-url url)))
+                  `(("shareId" . ,(outline-wiki-get-id-from-url url)))
                 `(("id" . ,(outline-wiki-get-id-from-url url))))))
-    (outline-wiki-post-request "/api/documents.info" data callback)))
+    (outline-wiki-post-request "/api/documents.info" data (lambda (data) (funcall callback (alist-get 'data data))))))
 
 (defun outline-wiki-doc-open (doc)
   "Open an outline DOC in a new buffer."
@@ -122,6 +122,20 @@ TODO: Show collection name also in front. That might need caching
   (if-let ((parent (outline-wiki-doc-parent doc all-docs)))
       (concat (outline-wiki-relative-path parent all-docs) " › " (alist-get 'title doc))
     (alist-get 'title doc)))
+
+;;;###autoload
+(defun outline-wiki-doc-open-from-url (url)
+  "Open doc from given URL for editing."
+  (interactive "sOutline URL: ")
+  (outline-wiki-get-doc-from-url url #'outline-wiki-doc-open))
+
+;;;###autoload
+(defun outline-wiki-save ()
+  "Save doc showed in current buffer."
+  (interactive)
+  (if outline-wiki-doc
+      (outline-wiki-doc-save outline-wiki-doc)
+    (message "No outline document open right now.")))
 
 ;;;###autoload
 (defun helm-outline-wiki-search (query-term)
