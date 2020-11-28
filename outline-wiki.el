@@ -4,7 +4,7 @@
 
 ;; Author: Abhinav Tushar <lepisma@fastmail.com>
 ;; Version: 1.0.0
-;; Package-Requires: ((emacs "26") (helm "3.3") (request "0.3.1"))
+;; Package-Requires: ((emacs "26") (helm "3.7.0") (markdown-mode "2.4") (request "0.3.2"))
 ;; URL: https://github.com/lepisma/outline-wiki.el
 
 ;;; Commentary:
@@ -51,14 +51,14 @@
 (defun outline-wiki-post-request (request-url data callback)
   "Send post request to outline API."
   (request
-   (concat outline-wiki-url request-url)
-   :type "POST"
-   :headers `(("authorization" . ,(concat "Bearer " outline-wiki-api-token)))
-   :data data
-   :parser 'json-read
-   :success (cl-function
-             (lambda (&key data &allow-other-keys)
-               (funcall callback data)))))
+    (concat outline-wiki-url request-url)
+    :type "POST"
+    :headers `(("authorization" . ,(concat "Bearer " outline-wiki-api-token)))
+    :data data
+    :parser 'json-read
+    :success (cl-function
+              (lambda (&key data &allow-other-keys)
+                (funcall callback data)))))
 
 (defun outline-wiki-is-share-url (url)
   (string-match-p (concat outline-wiki-url "/share") url))
@@ -93,14 +93,11 @@ document."
   "Push given DOC on the API. This unconditionally overwrites the
 upstream so be careful with multiple editors."
   (message "Saving document")
-  (request
-   (concat outline-wiki-url "/api/documents.update")
-   :type "POST"
-   :headers `(("authorization" . ,(concat "Bearer " outline-wiki-api-token)))
-   :data `(("id" . ,(alist-get 'id doc))
-           ("text" . ,(buffer-substring-no-properties (point-min) (point-max))))
-   :success (lambda (&rest _)
-              (message "Document saved"))))
+  (outline-wiki-post-request
+   "/api/documents.update"
+   `(("id" . ,(alist-get 'id doc))
+     ("text" . ,(buffer-substring-no-properties (point-min) (point-max))))
+   (lambda (&rest _) (message "Document saved"))))
 
 (defun outline-wiki-doc-open-in-browser (doc)
   "Open an outline DOC in default web browser."
