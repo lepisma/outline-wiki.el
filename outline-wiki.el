@@ -126,7 +126,6 @@ TODO: Show collection name also in front. That might need caching
   (interactive "sOutline URL: ")
   (outline-wiki-get-doc-from-url url #'outline-wiki-doc-open))
 
-;;;###autoload
 (defun outline-wiki-save ()
   "Save doc showed in current buffer."
   (interactive)
@@ -134,6 +133,7 @@ TODO: Show collection name also in front. That might need caching
       (outline-wiki-doc-save outline-wiki-doc)
     (message "No outline document open right now")))
 
+;;;###autoload
 (define-minor-mode outline-wiki-mode
   "Minor mode for working with outline wiki documents."
   :init-value nil
