@@ -102,9 +102,8 @@ upstream so be careful with multiple editors."
    :headers `(("authorization" . ,(concat "Bearer " outline-wiki-api-token)))
    :data `(("id" . ,(alist-get 'id doc))
            ("text" . ,(buffer-substring-no-properties (point-min) (point-max))))
-   :success (cl-function
-             (lambda (&rest _)
-               (message "Document saved.")))))
+   :success (lambda (&rest _)
+              (message "Document saved."))))
 
 (defun outline-wiki-doc-open-in-browser (doc)
   "Open an outline DOC in default web browser."
