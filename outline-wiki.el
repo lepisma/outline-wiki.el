@@ -48,10 +48,6 @@
   (interactive)
   (browse-url (concat outline-wiki-url "/settings/tokens")))
 
-(define-minor-mode outline-wiki-mode
-  "Minor mode for working with outline wiki documents."
-  :init-value nil)
-
 (defun outline-wiki-post-request (request-url data callback)
   "Send post request to outline API."
   (request
@@ -96,6 +92,7 @@ document."
 (defun outline-wiki-doc-save (doc)
   "Push given DOC on the API. This unconditionally overwrites the
 upstream so be careful with multiple editors."
+  (message "Saving document")
   (request
    (concat outline-wiki-url "/api/documents.update")
    :type "POST"
@@ -103,7 +100,7 @@ upstream so be careful with multiple editors."
    :data `(("id" . ,(alist-get 'id doc))
            ("text" . ,(buffer-substring-no-properties (point-min) (point-max))))
    :success (lambda (&rest _)
-              (message "Document saved."))))
+              (message "Document saved"))))
 
 (defun outline-wiki-doc-open-in-browser (doc)
   "Open an outline DOC in default web browser."
@@ -135,7 +132,12 @@ TODO: Show collection name also in front. That might need caching
   (interactive)
   (if outline-wiki-doc
       (outline-wiki-doc-save outline-wiki-doc)
-    (message "No outline document open right now.")))
+    (message "No outline document open right now")))
+
+(define-minor-mode outline-wiki-mode
+  "Minor mode for working with outline wiki documents."
+  :init-value nil
+  :keymap `((,(kbd "C-x C-s") . outline-wiki-save)))
 
 ;;;###autoload
 (defun helm-outline-wiki-search (query-term)
