@@ -60,7 +60,7 @@
               (lambda (&key data &allow-other-keys)
                 (funcall callback data)))))
 
-(defun outline-wiki-is-share-url (url)
+(defun outline-wiki-share-url-p (url)
   (string-match-p (concat outline-wiki-url "/share") url))
 
 (defun outline-wiki-get-id-from-url (url)
@@ -72,7 +72,7 @@ This id is share-id or url-id depending on the type of URL."
 (defun outline-wiki-get-doc-from-url (url callback)
   "Get document for the given URL and call CALLBACK on the
 document."
-  (let ((data (if (outline-wiki-is-share-url url)
+  (let ((data (if (outline-wiki-share-url-p url)
                   `(("shareId" . ,(outline-wiki-get-id-from-url url)))
                 `(("id" . ,(outline-wiki-get-id-from-url url))))))
     (outline-wiki-post-request "/api/documents.info" data (lambda (data) (funcall callback (alist-get 'data data))))))
