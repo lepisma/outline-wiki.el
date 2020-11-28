@@ -98,7 +98,7 @@
     (alist-get 'title doc)))
 
 ;;;###autoload
-(defun helm-outline-wiki-doc (query-term)
+(defun helm-outline-wiki-search (query-term)
   "Actions for outline wiki documents."
   (interactive "sQuery: ")
   (request
